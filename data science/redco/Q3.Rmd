@@ -1,0 +1,169 @@
+---
+title: "Question_03"
+author: "gowtham_1p23mb010"
+date: "2025-02-02"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+3.	Using the "bank-full" dataset, perform the following tasks with detailed analysis and appropriate visualizations:
+
+
+
+i.	Load the dataset and examine its structure using basic commands
+
+```{r}
+df = read.csv("D:/Data Science for Marketing-I/data/bank-full.csv")
+```
+
+```{r}
+str(df)
+```
+
+```{r}
+summary(df)
+```
+
+```{r}
+head(df)
+```
+
+```{r}
+dim(df)
+```
+Interpretation: This step checks the data type, column names, and basic summary statistics to understand the dataset's structure.
+
+ii.	Create a new variable called "conversion" by transforming the categorical values in the "Target" column into numerical representations. 
+
+```{r}
+df$conversion=rep(0,nrow(df)) 
+df$conversion[df$Target=='yes']=1
+```
+
+Interpretation:This converts the target variable into numerical format, making it easier for regression and machine learning models.
+
+
+iii.	Calculate and interpret the Conversion Rate. How does the code implement this calculation, and what does it reveal about the target variable distribution?
+
+```{r}
+print(sum(df$conversion)/nrow(df)*100)
+```
+
+Interpretation:The conversion rate is the percentage of customers who accepted the offer. A higher rate suggests a successful campaign.
+
+
+iv.	Analyze and visualize Conversion Rates by Marital Status: Explain how conversion rates are computed for each marital status. Create a bar chart to display these rates and interpret the visualization.
+
+```{r}
+library(dplyr)
+marital_conversion <- df %>%
+  group_by(marital) %>%
+  summarise(conversion_rate = mean(conversion))
+
+barplot(marital_conversion$conversion_rate, names.arg = marital_conversion$marital,
+        col = "skyblue", main = "Conversion Rate by Marital Status", ylab = "Rate")
+```
+
+Interpretation:This visual shows how conversion rates vary by marital status, helping target specific customer groups.
+
+
+v.	Investigate Default Rates by Conversion Status using a pivot table and pie chart visualizations. What insights can you draw from these visual representations?
+
+```{r}
+default_conversion <- table(df$default, df$conversion)
+
+pie(table(df$default), labels = c("No Default", "Default"), main = "Default by Conversion Status")
+
+```
+
+Interpretation:This reveals how default status correlates with conversion, providing insights into customer financial reliability.
+
+
+vi.	Use a boxplot to analyze the relationship between conversion status and bank balance distributions. Why are outliers excluded, and what does the plot tell you about customer balance patterns?
+
+```{r}
+boxplot(balance ~ conversion, data = df, col = c("lightblue", "pink"),
+        main = "Bank Balance Distribution by Conversion", xlab = "Conversion", ylab = "Balance")
+
+```
+
+Interpretation:The boxplot shows the distribution of bank balances by conversion status. Outliers are excluded to focus on typical patterns.
+
+
+vii.	Explore Conversion Rates by Number of Contacts (campaign): Describe the method used to calculate these rates, and explain why this metric is significant in a marketing campaign.
+
+```{r}
+campaign_conversion <- df %>%
+  group_by(campaign) %>%
+  summarise(conversion_rate = mean(conversion))
+
+plot(campaign_conversion$campaign, campaign_conversion$conversion_rate, type = "o", col = "blue",
+     main = "Conversion Rate by Number of Contacts", xlab = "Contacts", ylab = "Conversion Rate")
+
+```
+
+Interpretation:This tracks how conversion rates change with the number of contacts, optimizing campaign efforts.
+
+
+viii.	Describe how to encode categorical variables, such as job, marital, housing, and loan, for machine learning models.
+
+```{r}
+# One-hot encoding for categorical variables
+df_encoded <- model.matrix(~ job + marital + housing + loan - 1, data = df)
+```
+
+Interpretation:Categorical variables are encoded as binary indicators, enabling their use in machine learning algorithms.
+
+
+ix.	Build a Decision Tree Model using the provided features:Explain the selection of features and the target variable?
+```{r}
+library(rpart)
+```
+
+```{r}
+#complexity parameter
+fit <- rpart(
+  conversion ~ age +  campaign + previous + housing + job + marital,
+  method="class", 
+  data=df,
+  control=rpart.control(maxdepth=4, cp=0.0001)
+)
+```
+
+```{r}
+library(rpart.plot)
+```
+
+
+```{r}
+# plot tree 
+rpart.plot(fit, type = 0, extra = 1, under = TRUE, cex = 0.8, fallen.leaves = TRUE)
+```
+
+Interpretation:
+  
+  Past interactions matter: Having previous interactions (≥1) gives a better chance of approval.
+  Age plays a role: Older individuals (≥61) are more likely to be rejected.
+  Marital and job status influence young individuals: Single people in specific job roles have better approval chances.
+  Housing loans and job type affect approvals for those with previous interactions: Management, retired, and student roles have a higher chance of approval.
+
+ 
+Visualize the decision tree using appropriate plotting techniques. How does this visualization help in understanding the decision-making process of the model?
+
+```{r}
+rpart.plot(fit, cex = 0.8, fallen.leaves = TRUE)
+```
+
+Interpretation:
+
+   This decision tree functions similarly to the previous one, but the key difference is    that it provides the **majority percentage** at each decision point.  
+
+   Since we **cannot use** `type = 0` and `extra = 1` together:  
+   - `type = 0` displays only the basic structure of the tree.  
+   - `extra = 1` enhances the tree by adding **outcome details** and **data distribution**  within each node.  
+
+   This means the visualization not only shows the decision logic but also highlights the   **dominant class percentage** at each step.
+
+
+

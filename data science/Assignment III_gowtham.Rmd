@@ -1,0 +1,180 @@
+---
+title: "Assignment-III"
+output: html_document
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# install.packages('rattle')
+#library(rattle)	
+
+# install.packages('rpart')
+library(rpart) # used to build decision tree
+
+# install.packages('rpart.plot')
+library(rpart.plot)
+
+```
+
+#### 1. Load Data ####
+
+
+```{r}
+df <- read.csv(
+  file="D:/Data Science for Marketing-I/data/bank-full.csv", 
+  header=TRUE
+)
+
+df
+```
+
+```{r}
+# Encode Response as 0s and 1s
+df$conversion=rep(0,nrow(df)) 
+df$conversion[df$Target=='yes']=1
+df
+```
+
+#### 2. Data Analysis ####
+
+Compute Conversion rate & Visualize through bar plot based on Job, Marital & Education
+
+```{r}
+####  Conversion Rates by Job ####
+conversionsByJob <-df %>%
+  group_by(job) %>%
+  summarise(Conversions = sum(conversion),
+            Total = n(),
+            ConversionRate = Conversions / Total)
+  
+conversionsByJob
+```
+
+```{r}
+ggplot(conversionsByJob, aes(x=job, y=ConversionRate)) +
+  geom_bar( stat="identity", fill = "green", color = "black") +
+  ggtitle('Conversion Rates by Job') +
+  xlab("Job") +
+  ylab("Conversion Rate (%)") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+```
+
+```{r}
+####  Conversion Rates by Marital ####
+conversionsByMarital <- conversionsByMarital <- df %>%
+  group_by(marital) %>%
+  summarise(Conversions = sum(conversion),
+            Total = n(),
+            ConversionRate = conversion / Total) 
+conversionsByMarital 
+```
+
+
+```{r}
+ggplot(conversionsByMarital, aes(x=marital, y=ConversionRate)) +
+  geom_bar( stat="identity", fill = "gold", color = "gold") +
+  ggtitle('Conversion Rates by marital') +
+  xlab("marital") +
+  ylab("Conversion Rate (%)") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+```
+
+
+```{r}
+####  Conversion Rates by Education ####
+conversionsByEdu <-  df %>%
+  group_by(education) %>%
+  summarise(Conversions = sum(conversion),
+            Total = n(),
+            ConversionRate = conversion / Total)
+conversionsByEdu 
+```
+
+```{r}
+ggplot(conversionsByEdu , aes(x=education, y=ConversionRate)) +
+  geom_bar( stat="identity", fill = "green", color = "black") +
+  ggtitle('Conversion Rates by education') +
+  xlab("martial") +
+  ylab("Conversion Rate (%)") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+```
+
+Perform Encoding for categorical variables
+
+```{r}
+#### Encoding Categorical Variables ####
+rapply(df, function(x) length(unique(x)))
+
+#### encoding 'month' ####
+# unique values
+unique(df$month)
+# convert to numbers
+months = lapply(month.abb, function(x) tolower(x))
+months
+# test
+match(unique(df$month), months)
+
+
+```
+
+
+```{r}
+#### encoding job, housing, marital ####
+df$job <- factor(df$job)
+df$housing <- factor(df$housing)
+df$marital <- factor(df$marital)
+```
+
+
+```{r}
+df
+```
+
+
+
+
+
+```{r}
+#### Fitting Decision Trees ####
+names(df)
+# grow tree 
+fit <- rpart(
+  conversion ~ age +  campaign + previous + housing + job + marital,
+  method="class", 
+  data=df,
+  control=rpart.control(maxdepth=4, cp=0.00001)
+)
+
+```
+
+
+```{r}
+# plot tree 
+rpart.plot(fit, type = 0, extra = 1, under = TRUE, cex = 0.7, fallen.leaves = TRUE)
+```
+```{r}
+rpart.plot(fit,cex = 0.7, fallen.leaves = TRUE )
+```
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,84 @@
+---
+title: "unit 4"
+author: "gowtham_1p23mb010"
+date: "2025-01-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(dplyr)
+library(ggplot2)
+library(readxl)
+library(lubridate)
+```
+
+```{r}
+df = read_excel("D:/Data Science for Marketing-I/data/Online Retail.xlsx")
+df
+```
+## pre-processing##
+```{r}
+# filter negative value
+df=df[(df$Quantity>0),]
+dim(df)
+```
+
+```{r}
+df=df[(df$UnitPrice>0),]
+dim(df)
+```
+
+```{r}
+df=df[(df$InvoiceDate
+       < as.Date("2011-12-01")),]
+dim(df)
+```
+##month wise order
+```{r}
+timeseries=df%>%
+  group_by(InvoiceDate=floor_date(InvoiceDate,"month")) %>%
+  summarise(NumOrders=n_distinct(InvoiceNo))
+```
+
+```{r}
+df%>%
+  group_by(InvoiceDate,"month")%>%
+  summarise(n_distinct(InvoiceNo))
+```
+
+
+
+```{r}
+ggplot(timeSeries,aes(x=InvoiceDate,y=NumOrders))+
+  geom_line()
+```
+
+##month wise sales
+```{r}
+timeseries=df%>%
+  group_by(CustomerID=floor_date(InvoiceDate,"month")) %>%
+  summarise(Total=n_distinct(InvoiceNo))
+```
+```{r}
+ggplot(timeSeries,aes(x=CustomerID,y=TotaL))+
+  geom_line()
+```
+
+
+## custsomer wise sales
+```{r}
+df$sales=df$Quantity*df$UnitPrice
+timeseries=df%>%
+  group_by(CustomerID=floor_date(InvoiceDate,"month"),CustomerID) %>%
+  summarise(Total=sum(sales))
+
+```
+
+```{r}
+ggplot(timeSeries,aes(x=CustomerID,y=TotaL))+
+  geom_line()
+```
+

@@ -1,0 +1,142 @@
+---
+title: "Question 2"
+author: "gowtham_1p23mb010"
+date: "2025-02-02"
+output: html_document
+--- 
+ Question No: 02
+ 
+Using the "Marketing Customer Value Analysis" dataset, complete the following tasks with proper analysis and interpretation: 
+ 
+ 
+i.	Load the dataset and explore its structure using basic commands.
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+df=read.csv("D:/Data Science for Marketing-I/data/WA_Fn-UseC_-Marketing-Customer-Value-Analysis.csv")
+```
+```{r}
+head(df)
+```
+
+```{r}
+str(df)
+```
+
+```{r}
+summary(df)
+```
+
+```{r}
+dim(df)
+```
+Interpertation: Basic commands provide an overview of the dataset.
+
+ii.	Create a new column named "Engaged" by transforming the categorical values in the "Response" variable into numerical values. Why is this transformation important?
+
+
+```{r}
+df$Engaged <- ifelse(df$Response == "Yes", 1, 0)
+
+```
+
+Interpertation: Converts "Yes/No" responses into 1 and 0 for numerical analysis.
+
+iii.	Calculate and interpret the Engagement Rate. How is it computed, and what does it indicate about the customer responses?
+
+```{r}
+print(sum(df$Engaged)/nrow(df)*100)
+```
+Interpertation: Engagement rate shows the percentage of customers who responded positively.
+
+iv.	Analyze engagement rate by "Renew Offer Type" and "Sales Channel":
+
+```{r}
+aggregate(Engaged ~ Renew.Offer.Type + Sales.Channel, data = df, mean)
+```
+
+Interpertation: Groups data by "Renew Offer Type" and "Sales Channel" to analyze engagement patterns.
+
+
+v.	Use a pivot table to summarize engagement by "Renew Offer Type" and visualize the results using both bar and pie charts. Why are these visualizations helpful in understanding customer engagement patterns? 
+
+```{r}
+#Bar chart
+ggplot(df, aes(x = Renew.Offer.Type, y = Engaged)) +
+  stat_summary(fun = mean, geom = "bar", fill = "skyblue") +
+  ggtitle("Engagement by Renew Offer Type")+
+   theme_minimal() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+```
+
+```{r}
+# Pie chart
+engagement_summary <- aggregate(Engaged ~ Renew.Offer.Type, data = df, mean)
+pie(engagement_summary$Engaged, labels = engagement_summary$Renew.Offer.Type, 
+    main = "Engagement by Renew Offer Type", col = rainbow(length(engagement_summary$Engaged)))
+```
+
+ vi.	Explain the purpose of regression analysis in this context. Describe how you would approach regression using
+ 
+ 
+**Purpose of Regression Analysis:** 
+Regression analysis is used to understand and quantify the relationship between variables, enabling the prediction of an outcome variable (e.g., engagement) based on other influencing factors.
+ 
+(i) continuous variables only
+
+```{r}
+# Continuous variables only
+model_cont <- lm(Engaged ~ Income, data = df)
+summary(model_cont)
+```
+
+Interpretation:
+       **Continuous Variables:** Examines numerical predictors to assess their direct influence on the outcome. The coefficients indicate how much the target variable changes with a one-unit increase in the predictor. 
+
+ (ii) categorical variables
+ 
+```{r}
+# Categorical variables
+df$Renew.Offer.Type <- as.factor(df$Renew.Offer.Type)
+model_cat <- glm(Engaged ~ Renew.Offer.Type, family = binomial, data = df)
+summary(model_cat)
+```
+Interpretation: **Categorical Variables:** Utilizes dummy coding to evaluate the impact of different categories. The coefficients signify the variation from the baseline category.  
+
+
+(iii) both continuous and categorical variables
+
+```{r}
+# Both types
+model_both <- glm(Engaged ~ Income + Renew.Offer.Type, family = binomial, data = df)
+summary(model_both)
+```
+
+Interpretation:**Combination of Both:** Integrates numerical and categorical variables for a comprehensive model. Continuous predictors show direct effects, while categorical variables are interpreted relative to a reference group.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
